@@ -31,7 +31,7 @@ One honest caveat, verified against the n8n source: the native node in this mode
 4. Save and activate the workflow.
 5. Open the Chat Trigger node, copy the production chat URL, and paste it into `WEBHOOK_URL` at the top of `docs/chat.js`. The trigger allows all origins by default; you can restrict Allowed Origins to your GitHub Pages domain in its options.
 
-If you change the graph, run `bun scripts/sync-graph.mjs` and paste the fresh `graph/index.md` into the Agent's system message below the line `THE INDEX`. The index in the workflow is a snapshot, not a live reference.
+If you change the graph, run `bun scripts/sync-graph.mjs`. It rewrites the index inside both workflow JSONs as well, replacing only what follows the `THE INDEX` marker, so the files never drift from the nodes. Re-import the workflow into n8n (or paste the fresh block into the running Agent's system message) to pick up the change.
 
 ## Forking this
 
