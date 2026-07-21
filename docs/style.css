@@ -1,0 +1,310 @@
+/* Design tokens.
+   Color is strictly achromatic: oklch with chroma 0 cannot tint, light and
+   dark share one scale. Geometry derives from φ: the spacing ladder is the
+   Fibonacci sequence, the type scale is powers of φ, layout splits at φ:1. */
+
+:root {
+  color-scheme: light dark;
+  --bg: oklch(98% 0 0);
+  --surface: oklch(94% 0 0);
+  --border: oklch(85% 0 0);
+  --text: oklch(15% 0 0);
+  --text-muted: oklch(40% 0 0);
+
+  --space-1: 5px;
+  --space-2: 8px;
+  --space-3: 13px;
+  --space-4: 21px;
+  --space-5: 34px;
+  --space-6: 55px;
+  --space-7: 89px;
+  --space-8: 144px;
+  --radius-sm: var(--space-1);
+  --radius-md: var(--space-2);
+  --radius-lg: var(--space-3);
+
+  --text-sm: 0.875rem;     /* 14px, captions; deliberately not 1/φ, legibility floor */
+  --text-base: 1rem;       /* browser default, respects user zoom */
+  --text-lg: 1.618rem;     /* φ¹ */
+  --text-xl: 2.618rem;     /* φ² */
+  --text-2xl: 4.236rem;    /* φ³ */
+
+  font-family: system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.618;
+  background: var(--bg);
+  color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(15% 0 0);
+    --surface: oklch(20% 0 0);
+    --border: oklch(30% 0 0);
+    --text: oklch(95% 0 0);
+    --text-muted: oklch(70% 0 0);
+  }
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  max-width: 987px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text-muted);
+  outline-offset: 2px;
+}
+
+/* Hero */
+
+.hero {
+  padding-block: var(--space-8) var(--space-6);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(var(--text-xl), 9vw, var(--text-2xl));
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hero p {
+  margin: var(--space-4) 0 0;
+  max-width: 34rem;
+  color: var(--text-muted);
+}
+
+/* Sections */
+
+main section {
+  margin: 0 0 var(--space-7);
+}
+
+main h2 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+main section > p {
+  margin: 0 0 var(--space-3);
+  max-width: 42rem;
+}
+
+.caption {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Graph: canvas and detail panel split at φ:1, canvas is a golden rectangle */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.618fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+#canvas {
+  aspect-ratio: 1.618 / 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  min-height: var(--space-8);
+}
+
+.panel-type {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.panel h3 {
+  margin: var(--space-1) 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.panel h4 {
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.panel ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.panel li {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.panel-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.edge-chip {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.edge-chip:hover {
+  background: var(--surface);
+}
+
+.edge-chip .rel {
+  color: var(--text-muted);
+}
+
+.legend {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.legend svg {
+  display: block;
+}
+
+/* Chat: height and width are consecutive Fibonacci numbers, so the widget
+   itself approximates a golden rectangle in portrait */
+
+#chat-widget {
+  height: 610px;
+  max-width: 610px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+#chat-widget.unwired {
+  height: auto;
+}
+
+#chat-widget > * {
+  height: 100%;
+}
+
+.chat-unwired {
+  margin: 0;
+  padding: var(--space-5);
+  color: var(--text-muted);
+}
+
+.chat-unwired code {
+  color: var(--text);
+}
+
+/* Footer */
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: var(--space-5) 0 var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding-block-start: var(--space-7);
+  }
+}
+
+/* n8n chat widget: overriding the base color tokens is enough to remove the
+   default pink and teal accents; every derived variable follows. The values
+   reference the site tokens, so the widget flips with prefers-color-scheme
+   on its own. Variable names verified against @n8n/chat 1.30.1, including
+   its mixed single and double dash spellings. */
+
+:root {
+  --chat--color--primary: var(--text);
+  --chat--color--primary-shade-50: var(--text-muted);
+  --chat--color--primary--shade-100: var(--text-muted);
+  --chat--color--secondary: var(--text);
+  --chat--color-secondary-shade-50: var(--text-muted);
+  --chat--color-white: var(--bg);
+  --chat--color-light: var(--surface);
+  --chat--color-light-shade-50: var(--border);
+  --chat--color-light-shade-100: var(--border);
+  --chat--color-medium: var(--border);
+  --chat--color-dark: var(--text);
+  --chat--color-disabled: var(--text-muted);
+  --chat--color-typing: var(--text-muted);
+
+  --chat--spacing: var(--space-4);
+  --chat--border-radius: var(--radius-sm);
+  --chat--font-family: inherit;
+
+  --chat--header--background: var(--surface);
+  --chat--header--color: var(--text);
+  --chat--header--border-bottom: 1px solid var(--border);
+  --chat--heading--font-size: var(--text-lg);
+  --chat--subtitle--font-size: var(--text-sm);
+  --chat--subtitle--line-height: 1.618;
+
+  --chat--body--background: var(--bg);
+  --chat--message-line-height: 1.618;
+  --chat--message--bot--background: var(--surface);
+  --chat--message--bot--color: var(--text);
+  --chat--message--user--background: var(--text);
+  --chat--message--user--color: var(--bg);
+  --chat--message--pre--background: var(--surface);
+
+  --chat--input--background: var(--bg);
+  --chat--input--text-color: var(--text);
+  --chat--input--container--background: var(--bg);
+  --chat--input--send--button--background: var(--bg);
+  --chat--input--send--button--color: var(--text);
+  --chat--input--send--button--background-hover: var(--bg);
+  --chat--input--send--button--color-hover: var(--text-muted);
+  --chat--input--file--button--background: var(--bg);
+  --chat--input--file--button--color: var(--text);
+  --chat--input--file--button--color-hover: var(--text-muted);
+
+  --chat--button--background--primary--disabled: var(--border);
+  --chat--button--background--secondary: var(--text-muted);
+  --chat--button--background--secondary--hover: var(--text);
+  --chat--button--background--secondary--disabled: var(--border);
+
+  --chat--footer--background: var(--bg);
+  --chat--footer--color: var(--text-muted);
+  --chat--footer--border-top: 1px solid var(--border);
+
+  --chat--window--border: 1px solid var(--border);
+}

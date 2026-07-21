@@ -1,0 +1,399 @@
+{
+  "nodes": [
+    {
+      "id": "this-project",
+      "type": "Project",
+      "notes": [
+        "public learning project",
+        "graph thinking + agent retrieval without embeddings"
+      ]
+    },
+    {
+      "id": "concept-graph-thinking",
+      "type": "Concept",
+      "notes": [
+        "nodes + edges instead of folder hierarchy / prose",
+        "relationships made explicit instead of implicit"
+      ]
+    },
+    {
+      "id": "concept-index-as-retriever",
+      "type": "Concept",
+      "notes": [
+        "index is read as text, the LLM decides which node is relevant by language understanding",
+        "no vector similarity, no embedding"
+      ]
+    },
+    {
+      "id": "concept-multi-hop-traversal",
+      "type": "Concept",
+      "notes": [
+        "one tool call per hop",
+        "the LLM follows edges one at a time, driven by relevance to the question, not by a graph query language"
+      ]
+    },
+    {
+      "id": "concept-rag-without-embeddings",
+      "type": "Concept",
+      "notes": [
+        "classic RAG: vector DB + similarity search",
+        "this pattern: index as a readable adjacency list, retrieval logic lives inside the LLM"
+      ]
+    },
+    {
+      "id": "concept-topology-vs-payload",
+      "type": "Concept",
+      "notes": [
+        "topology: structure + short description, small, always in context",
+        "payload: full text per node, expensive, loaded on demand"
+      ]
+    },
+    {
+      "id": "component-agents-md",
+      "type": "Component",
+      "notes": [
+        "build spec for a coding agent",
+        "first step, everything else is generated from it"
+      ]
+    },
+    {
+      "id": "component-graph-index",
+      "type": "Component",
+      "notes": [
+        "flat list of all nodes",
+        "topology layer, loaded entirely into the system prompt",
+        "generated, not hand-maintained"
+      ]
+    },
+    {
+      "id": "component-graph-nodes",
+      "type": "Component",
+      "notes": [
+        "MD files with YAML frontmatter",
+        "id, type, edges",
+        "payload layer of the graph"
+      ]
+    },
+    {
+      "id": "component-n8n-agent",
+      "type": "Component",
+      "notes": [
+        "AI Agent node in n8n",
+        "system prompt = content of graph/index.md",
+        "also answers questions about itself"
+      ]
+    },
+    {
+      "id": "component-sync-script",
+      "type": "Component",
+      "notes": [
+        "scripts/sync-graph.mjs",
+        "reads all node frontmatters, generates index.md and graph-data.json",
+        "runs locally via bun, or automatically via GitHub Action"
+      ]
+    },
+    {
+      "id": "component-tool-variant-github-node",
+      "type": "Component",
+      "notes": [
+        "native n8n GitHub node as agent tool",
+        "resource File, operation Get, parameters Owner/Repository/Path",
+        "less configuration, but n8n- and GitHub-specific"
+      ]
+    },
+    {
+      "id": "component-tool-variant-http",
+      "type": "Component",
+      "notes": [
+        "HTTP Request node as agent tool",
+        "GET against the GitHub Contents API, one parameter: path",
+        "generic, same pattern transfers to any REST API"
+      ]
+    },
+    {
+      "id": "component-website",
+      "type": "Component",
+      "notes": [
+        "index.html with explanation, graph visualization, chat widget",
+        "GitHub Pages, no build step",
+        "automatic dark/light mode via prefers-color-scheme",
+        "achromatic design system, all spacing/type/layout derived from φ"
+      ]
+    },
+    {
+      "id": "step-1-model-the-graph",
+      "type": "Step",
+      "notes": [
+        "design nodes and edges as text/YAML before writing any code",
+        "questions: what are the things, what are their relationships"
+      ]
+    },
+    {
+      "id": "step-2-write-nodes",
+      "type": "Step",
+      "notes": [
+        "one MD file with frontmatter per node"
+      ]
+    },
+    {
+      "id": "step-3-generate-index",
+      "type": "Step",
+      "notes": [
+        "write scripts/sync-graph.mjs",
+        "generate index.md and graph-data.json from it, do not write them by hand"
+      ]
+    },
+    {
+      "id": "step-4-build-n8n",
+      "type": "Step",
+      "notes": [
+        "wire up Chat Trigger + AI Agent node",
+        "connect one of the two tool variants (or both, for comparison)",
+        "insert index.md as the system prompt"
+      ]
+    },
+    {
+      "id": "step-5-build-website",
+      "type": "Step",
+      "notes": [
+        "graph-data.json is already produced by the sync script",
+        "wire up visualization, chat widget, and dark/light handling"
+      ]
+    },
+    {
+      "id": "limitations-of-the-pattern",
+      "type": "Limitation",
+      "notes": [
+        "without the sync script the index would drift from the nodes, prevented here by scripts/sync-graph.mjs",
+        "the index still grows linearly with node count, becomes too large for the context past a few hundred nodes"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "this-project",
+      "target": "concept-graph-thinking",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-agents-md",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-graph-nodes",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-graph-index",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-sync-script",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-n8n-agent",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "component-website",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
+      "target": "step-1-model-the-graph",
+      "rel": "built_in"
+    },
+    {
+      "source": "this-project",
+      "target": "limitations-of-the-pattern",
+      "rel": "has_limitation"
+    },
+    {
+      "source": "concept-graph-thinking",
+      "target": "concept-topology-vs-payload",
+      "rel": "basis_for"
+    },
+    {
+      "source": "concept-index-as-retriever",
+      "target": "concept-multi-hop-traversal",
+      "rel": "enables"
+    },
+    {
+      "source": "concept-index-as-retriever",
+      "target": "concept-rag-without-embeddings",
+      "rel": "distinguished_from"
+    },
+    {
+      "source": "concept-multi-hop-traversal",
+      "target": "component-n8n-agent",
+      "rel": "implemented_in"
+    },
+    {
+      "source": "concept-topology-vs-payload",
+      "target": "concept-index-as-retriever",
+      "rel": "enables"
+    },
+    {
+      "source": "component-agents-md",
+      "target": "component-graph-nodes",
+      "rel": "produces"
+    },
+    {
+      "source": "component-agents-md",
+      "target": "component-graph-index",
+      "rel": "produces"
+    },
+    {
+      "source": "component-agents-md",
+      "target": "component-sync-script",
+      "rel": "produces"
+    },
+    {
+      "source": "component-agents-md",
+      "target": "component-n8n-agent",
+      "rel": "produces"
+    },
+    {
+      "source": "component-agents-md",
+      "target": "component-website",
+      "rel": "produces"
+    },
+    {
+      "source": "component-graph-index",
+      "target": "component-n8n-agent",
+      "rel": "loaded_by"
+    },
+    {
+      "source": "component-graph-nodes",
+      "target": "component-graph-index",
+      "rel": "aggregated_in"
+    },
+    {
+      "source": "component-n8n-agent",
+      "target": "component-tool-variant-http",
+      "rel": "uses_tool"
+    },
+    {
+      "source": "component-n8n-agent",
+      "target": "component-tool-variant-github-node",
+      "rel": "uses_tool"
+    },
+    {
+      "source": "component-n8n-agent",
+      "target": "component-website",
+      "rel": "embedded_in"
+    },
+    {
+      "source": "component-sync-script",
+      "target": "component-graph-index",
+      "rel": "produces"
+    },
+    {
+      "source": "component-sync-script",
+      "target": "limitations-of-the-pattern",
+      "rel": "mitigates"
+    },
+    {
+      "source": "component-tool-variant-github-node",
+      "target": "component-graph-nodes",
+      "rel": "fetches"
+    },
+    {
+      "source": "component-tool-variant-http",
+      "target": "component-graph-nodes",
+      "rel": "fetches"
+    },
+    {
+      "source": "component-tool-variant-http",
+      "target": "component-tool-variant-github-node",
+      "rel": "alternative_to"
+    },
+    {
+      "source": "component-website",
+      "target": "component-graph-nodes",
+      "rel": "visualizes"
+    },
+    {
+      "source": "component-website",
+      "target": "component-n8n-agent",
+      "rel": "displays"
+    },
+    {
+      "source": "step-1-model-the-graph",
+      "target": "concept-graph-thinking",
+      "rel": "applies"
+    },
+    {
+      "source": "step-1-model-the-graph",
+      "target": "step-2-write-nodes",
+      "rel": "next_step"
+    },
+    {
+      "source": "step-2-write-nodes",
+      "target": "component-graph-nodes",
+      "rel": "produces"
+    },
+    {
+      "source": "step-2-write-nodes",
+      "target": "step-3-generate-index",
+      "rel": "next_step"
+    },
+    {
+      "source": "step-3-generate-index",
+      "target": "component-sync-script",
+      "rel": "produces"
+    },
+    {
+      "source": "step-3-generate-index",
+      "target": "component-graph-index",
+      "rel": "produces"
+    },
+    {
+      "source": "step-3-generate-index",
+      "target": "step-4-build-n8n",
+      "rel": "next_step"
+    },
+    {
+      "source": "step-4-build-n8n",
+      "target": "component-n8n-agent",
+      "rel": "produces"
+    },
+    {
+      "source": "step-4-build-n8n",
+      "target": "component-tool-variant-http",
+      "rel": "produces"
+    },
+    {
+      "source": "step-4-build-n8n",
+      "target": "component-tool-variant-github-node",
+      "rel": "produces"
+    },
+    {
+      "source": "step-4-build-n8n",
+      "target": "step-5-build-website",
+      "rel": "next_step"
+    },
+    {
+      "source": "step-5-build-website",
+      "target": "component-website",
+      "rel": "produces"
+    },
+    {
+      "source": "limitations-of-the-pattern",
+      "target": "component-graph-index",
+      "rel": "affects"
+    },
+    {
+      "source": "limitations-of-the-pattern",
+      "target": "component-graph-nodes",
+      "rel": "affects"
+    }
+  ]
+}
