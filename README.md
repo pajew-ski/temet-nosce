@@ -14,8 +14,17 @@ Twenty markdown files under `graph/nodes/` are the graph: YAML frontmatter with 
 2. **Agent**: import one of the two workflows from [`n8n/`](n8n/README.md) into n8n, add credentials, activate.
 3. **Widget**: paste the Chat Trigger's production URL into `WEBHOOK_URL` in `docs/chat.js`.
 
+Forking it: the website's source links adapt to your repo automatically (derived from the GitHub Pages URL). Only the n8n workflow needs its repo fields pointed at your fork; [`n8n/README.md`](n8n/README.md#forking-this) lists exactly which ones.
+
 ## Editing the graph
 
 Edit or add a file under `graph/nodes/`, then run `bun scripts/sync-graph.mjs`. It validates every edge and regenerates `graph/index.md` and `docs/graph-data.json`; a GitHub Action does the same on push, so the index can never silently drift from the nodes.
 
 Everything here was built by a coding agent from [AGENTS.md](AGENTS.md), which is itself the first node of the graph.
+
+## License
+
+The code is licensed under the MIT License; see [LICENSE](LICENSE).
+
+The knowledge graph is dedicated to the public domain under Creative Commons Zero (CC0 1.0); see [graph/LICENSE](graph/LICENSE). This covers the node files under `graph/nodes/` and everything generated from them: `graph/index.md` and `docs/graph-data.json`. Use the graph for anything, no attribution required.
+

@@ -22,7 +22,7 @@ Target audience: complete beginners to graphs. The goal isn't production readine
 │   └── nodes/
 │       └── <id>.md                  (20 files, see graph data below)
 ├── scripts/
-│   └── sync-graph.mjs               (generates index.md + graph-data.json)
+│   └── sync-graph.mjs               (generates index.md, graph-data.json, workflow prompts)
 ├── docs/                             (GitHub Pages source: Settings → Pages → main /docs)
 │   ├── index.html
 │   ├── style.css                    (design tokens: neutral OKLCH grays, φ/Fibonacci scale)
@@ -159,7 +159,7 @@ edges:
 ```yaml
 id: component-sync-script
 type: Component
-notes: ["scripts/sync-graph.mjs", "reads all node frontmatters, generates index.md and graph-data.json", "runs locally via bun, or automatically via GitHub Action"]
+notes: ["scripts/sync-graph.mjs", "reads all node frontmatters, generates index.md, graph-data.json, and the index inside both n8n workflows", "runs locally via bun, or automatically via GitHub Action"]
 edges:
   - {rel: produces, target: component-graph-index}
   - {rel: mitigates, target: limitations-of-the-pattern}
@@ -265,6 +265,7 @@ Good demo path for "how are you built and how would I build one myself": `this-p
 - Reads all `graph/nodes/*.md`, extracts `id`, `type`, `notes`, `edges`
 - Writes `graph/index.md` per the index schema
 - Writes `docs/graph-data.json` as `{nodes: [{id, type}], edges: [{source, target, rel}]}`
+- Rewrites the index inside both `n8n/workflow-*.json` system prompts, replacing only what follows the `THE INDEX` marker, so the workflows never drift from the nodes either
 - Validates along the way: every edge must point to an existing `id`, otherwise it errors with file name and line, non-zero exit code
 - Invocation: `bun scripts/sync-graph.mjs`, no flags needed
 

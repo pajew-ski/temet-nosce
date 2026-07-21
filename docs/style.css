@@ -109,17 +109,20 @@ main section > p {
   font-size: var(--text-sm);
 }
 
-/* Graph: canvas and detail panel split at φ:1, canvas is a golden rectangle */
+/* Graph: canvas and detail panel split at φ:1. The canvas fills a share of the
+   viewport height so the graph scales up on large screens instead of sitting in
+   a fixed strip; the panel matches that height and scrolls its own overflow.
+   Portrait stacks them (see the orientation query below). */
 
 .layout {
   display: grid;
   grid-template-columns: 1.618fr 1fr;
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 #canvas {
-  aspect-ratio: 1.618 / 1;
+  height: clamp(340px, 62vh, 700px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -130,6 +133,8 @@ main section > p {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   min-height: var(--space-8);
+  max-height: clamp(340px, 62vh, 700px);
+  overflow-y: auto;
 }
 
 .panel-type {
@@ -170,6 +175,12 @@ main section > p {
   font-size: var(--text-sm);
 }
 
+.edge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .edge-chip {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -190,9 +201,19 @@ main section > p {
 }
 
 .legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
   margin-top: var(--space-3);
   color: var(--text-muted);
   font-size: var(--text-sm);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .legend svg {
@@ -238,11 +259,25 @@ footer {
 }
 
 @media (max-width: 800px) {
+  .hero {
+    padding-block-start: var(--space-7);
+  }
+}
+
+/* Portrait or narrow: stack the panel below a full-width canvas so both use the
+   full column width. The canvas keeps its landscape golden ratio — the graph is
+   a wide, shallow tree — so the extra width makes it larger without leaving
+   vertical air, and the panel grows to its natural height beneath it. */
+@media (orientation: portrait), (max-width: 800px) {
   .layout {
     grid-template-columns: 1fr;
   }
-  .hero {
-    padding-block-start: var(--space-7);
+  #canvas {
+    height: auto;
+    aspect-ratio: 1.618 / 1;
+  }
+  .panel {
+    max-height: none;
   }
 }
 
@@ -307,4 +342,62 @@ footer {
   --chat--footer--border-top: 1px solid var(--border);
 
   --chat--window--border: 1px solid var(--border);
+
+  /* Floating action button (CHAT_MODE "window" in chat.js). The toggle inherits
+     the primary-color chain by default; naming the tokens explicitly keeps it
+     on-theme, and because they resolve to the site tokens the button flips with
+     prefers-color-scheme in both light and dark. Inverted like a user message:
+     text-colored circle, background-colored icon. */
+  --chat--toggle--background: var(--text);
+  --chat--toggle--color: var(--bg);
+  --chat--toggle--hover--background: var(--text-muted);
+  --chat--toggle--active--background: var(--text-muted);
+}
+
+/* Markdown inside chat messages: the widget renders markdown to HTML but styles
+   only <pre>. Give links, lists, inline code and spacing sensible defaults so
+   bot answers — which cite graph nodes as links — read cleanly. Everything
+   inherits the message text color, so it works in both bot and user bubbles and
+   flips with the theme. */
+.chat-message-markdown p {
+  margin: 0 0 var(--space-2);
+}
+.chat-message-markdown a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+.chat-message-markdown ul,
+.chat-message-markdown ol {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-4);
+}
+.chat-message-markdown li {
+  margin: var(--space-1) 0;
+}
+.chat-message-markdown code {
+  /* Tint from the message text color so the chip contrasts in either bubble —
+     the bot bubble is itself --surface, so a fixed token would vanish there. */
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.3em;
+  font-size: 0.9em;
+}
+.chat-message-markdown pre code {
+  background: none;
+  padding: 0;
+}
+.chat-message-markdown h1,
+.chat-message-markdown h2,
+.chat-message-markdown h3 {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+.chat-message-markdown blockquote {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
 }
