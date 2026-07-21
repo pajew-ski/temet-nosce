@@ -196,7 +196,9 @@ const cy = cytoscape({
     padding: 34,
     fit: true,
   },
-  minZoom: 0.3,
+  // The floor must sit below the fit zoom of the smallest phones (~0.11 on a
+  // 320px viewport), or fit() clamps and crops the graph instead of fitting it.
+  minZoom: 0.1,
   maxZoom: 3,
 });
 
