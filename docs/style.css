@@ -109,17 +109,20 @@ main section > p {
   font-size: var(--text-sm);
 }
 
-/* Graph: canvas and detail panel split at φ:1, canvas is a golden rectangle */
+/* Graph: canvas and detail panel split at φ:1. The canvas fills a share of the
+   viewport height so the graph scales up on large screens instead of sitting in
+   a fixed strip; the panel matches that height and scrolls its own overflow.
+   Portrait stacks them (see the orientation query below). */
 
 .layout {
   display: grid;
   grid-template-columns: 1.618fr 1fr;
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 #canvas {
-  aspect-ratio: 1.618 / 1;
+  height: clamp(340px, 62vh, 700px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -130,6 +133,8 @@ main section > p {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   min-height: var(--space-8);
+  max-height: clamp(340px, 62vh, 700px);
+  overflow-y: auto;
 }
 
 .panel-type {
@@ -238,11 +243,25 @@ footer {
 }
 
 @media (max-width: 800px) {
+  .hero {
+    padding-block-start: var(--space-7);
+  }
+}
+
+/* Portrait or narrow: stack the panel below a full-width canvas so both use the
+   full column width. The canvas keeps its landscape golden ratio — the graph is
+   a wide, shallow tree — so the extra width makes it larger without leaving
+   vertical air, and the panel grows to its natural height beneath it. */
+@media (orientation: portrait), (max-width: 800px) {
   .layout {
     grid-template-columns: 1fr;
   }
-  .hero {
-    padding-block-start: var(--space-7);
+  #canvas {
+    height: auto;
+    aspect-ratio: 1.618 / 1;
+  }
+  .panel {
+    max-height: none;
   }
 }
 

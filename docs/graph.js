@@ -176,14 +176,20 @@ cy.on("unselect", "node", (e) => {
 
 onThemeChange(() => cy.style(graphStyle()));
 
+// Keep the graph fitted to its container across window resizes, orientation
+// flips, and the portrait/landscape reflow that changes the canvas dimensions.
+// A ResizeObserver on the canvas catches every size change, not just
+// window-level ones, and fires once on attach so the initial layout is fitted
+// to the settled box rather than whatever size it had mid-render.
+const canvas = document.querySelector("#canvas");
 let resizeTimer;
-window.addEventListener("resize", () => {
+new ResizeObserver(() => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     cy.resize();
-    cy.fit(undefined, 21);
-  }, 233);
-});
+    cy.fit(undefined, 34);
+  }, 120);
+}).observe(canvas);
 
 showSummary();
 
