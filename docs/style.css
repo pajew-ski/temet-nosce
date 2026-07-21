@@ -115,8 +115,13 @@ main section > p {
    Portrait stacks them (see the orientation query below). */
 
 .layout {
+  /* minmax(0, …) caps each track's automatic minimum: cytoscape gives its
+     inner wrapper an explicit pixel size on every resize, and a bare fr track
+     treats that as a content minimum. After an orientation flip the stale
+     wrapper size would feed back into the track, locking the canvas at the
+     old width (misaligned with the panel, or wider than the viewport). */
   display: grid;
-  grid-template-columns: 1.618fr 1fr;
+  grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr);
   gap: var(--space-4);
   align-items: stretch;
 }
@@ -126,6 +131,10 @@ main section > p {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  /* The box is sized by the grid alone; never let cytoscape's pixel-sized
+     wrapper push layout mid-rotation. Also clips the square canvas to the
+     rounded corner. */
+  overflow: hidden;
 }
 
 .panel {
@@ -267,14 +276,19 @@ footer {
 /* Portrait or narrow: stack the panel below a full-width canvas so both use the
    full column width. The canvas keeps its landscape golden ratio — the graph is
    a wide, shallow tree — so the extra width makes it larger without leaving
-   vertical air, and the panel grows to its natural height beneath it. */
+   vertical air, and the panel grows to its natural height beneath it.
+   The golden ratio is computed from the viewport rather than declared with
+   aspect-ratio: WebKit mis-sizes an empty grid item that carries an
+   aspect-ratio, collapsing the canvas to nothing on phones and tablets in
+   portrait. A height derived from 100vw needs no interop luck. The cap is the
+   shell's max content width (987px − 2·21px padding) over φ, so the box stops
+   growing exactly when the column does. */
 @media (orientation: portrait), (max-width: 800px) {
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   #canvas {
-    height: auto;
-    aspect-ratio: 1.618 / 1;
+    height: min(calc((100vw - 2 * var(--space-4)) / 1.618), 584px);
   }
   .panel {
     max-height: none;
