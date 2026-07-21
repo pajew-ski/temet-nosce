@@ -49,10 +49,24 @@
 
   <footer>
     <div class="shell">
-      temet nosce · built from <a href="https://github.com/pajew-ski/temet-nosce/blob/main/AGENTS.md">AGENTS.md</a> by a coding agent · <a href="https://github.com/pajew-ski/temet-nosce">source on GitHub</a>
+      temet nosce · built from <a id="agents-link" href="https://github.com/pajew-ski/temet-nosce/blob/main/AGENTS.md">AGENTS.md</a> by a coding agent · <a id="source-link" href="https://github.com/pajew-ski/temet-nosce">source on GitHub</a>
     </div>
   </footer>
 
+  <script type="module">
+    // Point the footer at whichever repository this site was deployed from, so a
+    // fork needs no manual edit. On <owner>.github.io/<repo>/ the owner and repo
+    // come straight from the URL; anywhere else (localhost, a custom domain) the
+    // static hrefs above stay as the fallback.
+    const host = location.hostname;
+    if (host.endsWith(".github.io")) {
+      const owner = host.slice(0, -".github.io".length);
+      const repo = location.pathname.split("/").filter(Boolean)[0] || `${owner}.github.io`;
+      const base = `https://github.com/${owner}/${repo}`;
+      document.querySelector("#source-link").href = base;
+      document.querySelector("#agents-link").href = `${base}/blob/main/AGENTS.md`;
+    }
+  </script>
   <script type="module" src="graph.js"></script>
   <script type="module" src="chat.js"></script>
 </body>
