@@ -2,7 +2,7 @@ import { createChat } from "https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bun
 
 // Production chat URL of the Chat Trigger node, available after importing and
 // activating one of the two workflow variants in n8n (see n8n/README.md).
-const WEBHOOK_URL = "";
+const WEBHOOK_URL = "https://n8n.pajewski.net/webhook/082d33c3-5847-4dc9-8ab4-7be9064d2b78/chat";
 
 // Theming lives in style.css: the widget reads --chat--* custom properties,
 // which reference the site tokens and flip with prefers-color-scheme, so no
