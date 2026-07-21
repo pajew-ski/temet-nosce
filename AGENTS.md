@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Public GitHub repo, project name **temet-nosce** (means "know thyself" or "know yourself."). Content: an n8n agent that explains itself and its own blueprint through graph retrieval. The graph describes the repo it lives in, and the path for building such a system from scratch, including this AGENTS.md as the first component.
+Public GitHub repo, project name **temet-nosce** (means "know thyself" or "know yourself"). Content: an n8n agent that explains itself and its own blueprint through graph retrieval. The graph describes the repo it lives in, and the path for building such a system from scratch, including this AGENTS.md as the first component.
 
 Target audience: complete beginners to graphs. The goal isn't production readiness, it's that someone comes away thinking in nodes and edges instead of folders and prose.
 
