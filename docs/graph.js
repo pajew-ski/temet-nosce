@@ -206,7 +206,7 @@ function edgeList(title, edges, direction) {
   const heading = document.createElement("h4");
   heading.textContent = title;
   const list = document.createElement("div");
-  list.className = "flex flex-wrap gap-[var(--space-2)]";
+  list.className = "edge-list";
   for (const edge of edges) list.append(chip(edge, direction));
   return [heading, list];
 }

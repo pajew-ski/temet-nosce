@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>temet nosce</title>
   <meta name="description" content="An n8n agent that explains itself and its own blueprint through graph retrieval, without a vector database and without embeddings.">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js" defer></script>
@@ -32,12 +31,12 @@
           <p class="panel-empty">Loading the graph.</p>
         </aside>
       </div>
-      <div class="legend flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)]">
-        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5.5" fill="currentColor"/></svg>Project</span>
-        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5" fill="none" stroke="currentColor"/></svg>Concept</span>
-        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="9" rx="2.5" fill="none" stroke="currentColor"/></svg>Component</span>
-        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1.5 3.5a2 2 0 0 1 2-2h7l4 4.5-4 4.5h-7a2 2 0 0 1-2-2z" fill="none" stroke="currentColor"/></svg>Step</span>
-        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M8 1 14.5 6 8 11 1.5 6z" fill="none" stroke="currentColor"/></svg>Limitation</span>
+      <div class="legend">
+        <span><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5.5" fill="currentColor"/></svg>Project</span>
+        <span><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5" fill="none" stroke="currentColor"/></svg>Concept</span>
+        <span><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="9" rx="2.5" fill="none" stroke="currentColor"/></svg>Component</span>
+        <span><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1.5 3.5a2 2 0 0 1 2-2h7l4 4.5-4 4.5h-7a2 2 0 0 1-2-2z" fill="none" stroke="currentColor"/></svg>Step</span>
+        <span><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M8 1 14.5 6 8 11 1.5 6z" fill="none" stroke="currentColor"/></svg>Limitation</span>
       </div>
     </section>
 
