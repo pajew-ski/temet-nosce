@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>temet nosce</title>
+  <meta name="description" content="An n8n agent that explains itself and its own blueprint through graph retrieval, without a vector database and without embeddings.">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js" defer></script>
+</head>
+<body>
+  <header class="hero shell">
+    <h1>temet nosce</h1>
+    <p>Know thyself. An agent that answers questions about itself by walking the knowledge graph it is built from.</p>
+  </header>
+
+  <main class="shell">
+    <section id="pattern">
+      <h2>The pattern</h2>
+      <p>A knowledge graph stores knowledge as nodes and edges: things, and named relationships between them. This site is built from one. Twenty small files describe this project, the concepts it rests on, the steps that build it, and where the pattern breaks.</p>
+      <p>The agent below retrieves from that graph without a vector database and without embeddings. Its entire retrieval apparatus is a flat text index: every node with its type, one line of notes, and its edges. The index sits in the system prompt. The model reads it, decides which node matters for a question, and fetches that node's file from this repository, one hop at a time, following edges by meaning rather than by similarity score.</p>
+      <p>Classic RAG asks what text is similar. This pattern asks what is connected.</p>
+    </section>
+
+    <section id="graph">
+      <h2>The graph</h2>
+      <div class="layout">
+        <div id="canvas" role="img" aria-label="Interactive visualization of the project knowledge graph"></div>
+        <aside class="panel" id="panel" aria-live="polite">
+          <p class="panel-empty">Loading the graph.</p>
+        </aside>
+      </div>
+      <div class="legend flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-[var(--space-2)]">
+        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5.5" fill="currentColor"/></svg>Project</span>
+        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><circle cx="8" cy="6" r="5" fill="none" stroke="currentColor"/></svg>Concept</span>
+        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="9" rx="2.5" fill="none" stroke="currentColor"/></svg>Component</span>
+        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1.5 3.5a2 2 0 0 1 2-2h7l4 4.5-4 4.5h-7a2 2 0 0 1-2-2z" fill="none" stroke="currentColor"/></svg>Step</span>
+        <span class="flex items-center gap-[var(--space-2)]"><svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M8 1 14.5 6 8 11 1.5 6z" fill="none" stroke="currentColor"/></svg>Limitation</span>
+      </div>
+    </section>
+
+    <section id="chat">
+      <h2>Ask the agent</h2>
+      <p class="caption">The agent runs in n8n. The graph index above sits in its system prompt; to answer, it may fetch node files from this repository, one hop at a time. The workflow behind it ships with the repository in two variants.</p>
+      <div id="chat-widget"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      temet nosce · built from <a href="https://github.com/pajew-ski/temet-nosce/blob/main/AGENTS.md">AGENTS.md</a> by a coding agent · <a href="https://github.com/pajew-ski/temet-nosce">source on GitHub</a>
+    </div>
+  </footer>
+
+  <script type="module" src="graph.js"></script>
+  <script type="module" src="chat.js"></script>
+</body>
+</html>

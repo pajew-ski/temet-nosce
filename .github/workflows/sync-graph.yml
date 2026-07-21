@@ -1,0 +1,28 @@
+name: sync graph
+
+on:
+  push:
+    paths:
+      - "graph/nodes/**"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun scripts/sync-graph.mjs
+      - name: commit generated files if changed
+        run: |
+          if git diff --quiet -- graph/index.md docs/graph-data.json; then
+            echo "index and graph data already in sync"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add graph/index.md docs/graph-data.json
+          git commit -m "chore: sync graph index and data"
+          git push
