@@ -70,11 +70,23 @@ function graphStyle() {
         "target-arrow-color": border,
         "arrow-scale": 0.7,
         opacity: 0.55,
+        // The relation type rides on the edge itself, so the meaning of a link is
+        // legible in the graph without opening the panel. autorotate keeps it
+        // aligned with the line; the background chip lifts it off crossing edges.
+        label: (e) => e.data("rel").replaceAll("_", " "),
+        "font-family": font,
+        "font-size": 6,
+        color: muted,
+        "text-rotation": "autorotate",
+        "text-background-color": bg,
+        "text-background-opacity": 1,
+        "text-background-padding": 1,
+        "text-background-shape": "roundrectangle",
       },
     },
     {
       selector: "edge.adjacent",
-      style: { "line-color": muted, "target-arrow-color": muted, opacity: 1 },
+      style: { "line-color": muted, "target-arrow-color": muted, opacity: 1, color: text, "font-size": 8 },
     },
   ];
 }
