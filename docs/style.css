@@ -307,4 +307,14 @@ footer {
   --chat--footer--border-top: 1px solid var(--border);
 
   --chat--window--border: 1px solid var(--border);
+
+  /* Floating action button (CHAT_MODE "window" in chat.js). The toggle inherits
+     the primary-color chain by default; naming the tokens explicitly keeps it
+     on-theme, and because they resolve to the site tokens the button flips with
+     prefers-color-scheme in both light and dark. Inverted like a user message:
+     text-colored circle, background-colored icon. */
+  --chat--toggle--background: var(--text);
+  --chat--toggle--color: var(--bg);
+  --chat--toggle--hover--background: var(--text-muted);
+  --chat--toggle--active--background: var(--text-muted);
 }
