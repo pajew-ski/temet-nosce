@@ -4,13 +4,14 @@ import { createChat } from "https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bun
 // activating one of the two workflow variants in n8n (see n8n/README.md).
 const WEBHOOK_URL = "https://n8n.pajewski.net/webhook/082d33c3-5847-4dc9-8ab4-7be9064d2b78/chat";
 
-// How the widget is presented. Switch by changing this one constant.
-//   "fullscreen" — the chat embedded in the "Ask the agent" section as a
-//                  golden rectangle, the page's centerpiece (default).
+// How the widget is presented. Switch by changing this one constant. Either
+// way the "Ask the agent" heading and its explanation stay on the page; only
+// the chat surface differs.
 //   "window"     — a floating action button in the corner that opens the chat
-//                  in a popover. The embedded "Ask the agent" section is
-//                  redundant in this mode and is removed.
-const CHAT_MODE = "fullscreen";
+//                  in a popover (default). The embedded box is left out.
+//   "fullscreen" — the chat embedded in the section as a golden rectangle,
+//                  the page's centerpiece.
+const CHAT_MODE = "window";
 
 // Theming lives in style.css: the widget reads --chat--* custom properties,
 // which reference the site tokens and flip with prefers-color-scheme, so no
@@ -44,9 +45,10 @@ if (!WEBHOOK_URL) {
   container.classList.add("unwired");
   container.replaceChildren(note);
 } else if (CHAT_MODE === "window") {
-  // Floating action button: drop the embedded section and let the widget mount
-  // its own toggle and popover on the page.
-  document.querySelector("#chat")?.remove();
+  // Floating action button: keep the section's heading and explanation, drop
+  // only the embedded chat box, and let the widget mount its own toggle and
+  // popover in the corner.
+  container.remove();
   createChat({ ...chatOptions, mode: "window" });
 } else {
   createChat({ ...chatOptions, target: "#chat-widget", mode: "fullscreen" });
