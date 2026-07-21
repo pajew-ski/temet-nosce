@@ -337,3 +337,51 @@ footer {
   --chat--toggle--hover--background: var(--text-muted);
   --chat--toggle--active--background: var(--text-muted);
 }
+
+/* Markdown inside chat messages: the widget renders markdown to HTML but styles
+   only <pre>. Give links, lists, inline code and spacing sensible defaults so
+   bot answers — which cite graph nodes as links — read cleanly. Everything
+   inherits the message text color, so it works in both bot and user bubbles and
+   flips with the theme. */
+.chat-message-markdown p {
+  margin: 0 0 var(--space-2);
+}
+.chat-message-markdown a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+.chat-message-markdown ul,
+.chat-message-markdown ol {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-4);
+}
+.chat-message-markdown li {
+  margin: var(--space-1) 0;
+}
+.chat-message-markdown code {
+  /* Tint from the message text color so the chip contrasts in either bubble —
+     the bot bubble is itself --surface, so a fixed token would vanish there. */
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.3em;
+  font-size: 0.9em;
+}
+.chat-message-markdown pre code {
+  background: none;
+  padding: 0;
+}
+.chat-message-markdown h1,
+.chat-message-markdown h2,
+.chat-message-markdown h3 {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+.chat-message-markdown blockquote {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
+}

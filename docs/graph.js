@@ -69,11 +69,12 @@ function graphStyle() {
         "target-arrow-shape": "triangle",
         "target-arrow-color": border,
         "arrow-scale": 0.7,
+        opacity: 0.55,
       },
     },
     {
       selector: "edge.adjacent",
-      style: { "line-color": muted, "target-arrow-color": muted },
+      style: { "line-color": muted, "target-arrow-color": muted, opacity: 1 },
     },
   ];
 }
@@ -81,6 +82,90 @@ function graphStyle() {
 const data = await (await fetch("graph-data.json")).json();
 const panel = document.querySelector("#panel");
 const nodesById = new Map(data.nodes.map((n) => [n.id, n]));
+
+// Radial layout: the project sits at the center, the build steps form an inner
+// ring in sequence order (clockwise from the top), and everything else sits on
+// outer rings by role. Each outer node is pulled toward the mean angle of the
+// inner neighbours it connects to, so related nodes end up near one another.
+// Positions are in model space; cytoscape fits them to the canvas.
+function radialPositions(nodes, edges) {
+  const LEVEL = { Project: 0, Step: 1, Component: 2, Concept: 3, Limitation: 3 };
+  const RADIUS = [0, 150, 300, 450];
+  const neighbours = new Map(nodes.map((n) => [n.id, []]));
+  for (const e of edges) {
+    neighbours.get(e.source)?.push(e.target);
+    neighbours.get(e.target)?.push(e.source);
+  }
+  const angle = new Map(); // only ring nodes get an angle; the center has none
+  const pos = {};
+  const place = (id, r, a) => {
+    angle.set(id, a);
+    pos[id] = { x: r * Math.cos(a), y: r * Math.sin(a) };
+  };
+  const meanAngle = (as) => {
+    if (!as.length) return null;
+    const x = as.reduce((s, a) => s + Math.cos(a), 0);
+    const y = as.reduce((s, a) => s + Math.sin(a), 0);
+    return x === 0 && y === 0 ? null : Math.atan2(y, x);
+  };
+  const anchorOf = (id) =>
+    meanAngle(neighbours.get(id).map((t) => angle.get(t)).filter((v) => v != null));
+
+  // Center: position only, no angle, so it never biases an outer node's anchor.
+  const center = nodes.find((n) => n.type === "Project");
+  if (center) pos[center.id] = { x: 0, y: 0 };
+
+  // Inner ring: build steps in sequence order, clockwise from the top.
+  const steps = nodes.filter((n) => n.type === "Step").sort((a, b) => a.id.localeCompare(b.id));
+  steps.forEach((n, i) => place(n.id, RADIUS[1], -Math.PI / 2 + (i * 2 * Math.PI) / steps.length));
+
+  // Widest circular gap in a sorted angle list; returns its midpoint. Used to
+  // slot nodes that have no inner neighbour to anchor to.
+  const widestGapMid = (sorted) => {
+    if (sorted.length === 0) return -Math.PI / 2;
+    let gi = 0, best = -1;
+    for (let i = 0; i < sorted.length; i++) {
+      let g = sorted[(i + 1) % sorted.length] - sorted[i];
+      if (g <= 0) g += 2 * Math.PI;
+      if (g > best) { best = g; gi = i; }
+    }
+    let a1 = sorted[gi], a2 = sorted[(gi + 1) % sorted.length];
+    if (a2 <= a1) a2 += 2 * Math.PI;
+    return (a1 + a2) / 2;
+  };
+
+  // Place one ring: order the nodes by the angle of their inner neighbours, then
+  // space them evenly (so labels never collide) and rotate the whole ring by the
+  // offset that best lines the nodes up with those neighbours. Nodes without an
+  // inner neighbour drop into the widest gap so they land somewhere sensible.
+  const placeRing = (ring, radius) => {
+    const n = ring.length;
+    if (n === 0) return;
+    const items = ring.map((node) => ({ id: node.id, a: anchorOf(node.id) }));
+    const used = items.filter((it) => it.a != null).map((it) => it.a).sort((x, y) => x - y);
+    for (const it of items) {
+      if (it.a != null) continue;
+      it.a = widestGapMid(used);
+      used.push(((it.a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI));
+      used.sort((x, y) => x - y);
+    }
+    items.sort((p, q) => p.a - q.a);
+    let sx = 0, sy = 0;
+    items.forEach((it, i) => {
+      const anchor = anchorOf(it.id);
+      if (anchor == null) return;
+      const even = (i * 2 * Math.PI) / n;
+      sx += Math.cos(anchor - even);
+      sy += Math.sin(anchor - even);
+    });
+    const offset = sx === 0 && sy === 0 ? -Math.PI / 2 : Math.atan2(sy, sx);
+    items.forEach((it, i) => place(it.id, radius, (i * 2 * Math.PI) / n + offset));
+  };
+
+  placeRing(nodes.filter((node) => LEVEL[node.type] === 2), RADIUS[2]);
+  placeRing(nodes.filter((node) => LEVEL[node.type] === 3), RADIUS[3]);
+  return pos;
+}
 
 const cy = cytoscape({
   container: document.querySelector("#canvas"),
@@ -94,12 +179,10 @@ const cy = cytoscape({
   ],
   style: graphStyle(),
   layout: {
-    name: "breadthfirst",
-    roots: ["this-project"],
-    directed: true,
-    padding: 21,
-    spacingFactor: 1.4,
-    animate: false,
+    name: "preset",
+    positions: radialPositions(data.nodes, data.edges),
+    padding: 34,
+    fit: true,
   },
   minZoom: 0.3,
   maxZoom: 3,
