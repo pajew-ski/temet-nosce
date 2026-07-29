@@ -25,6 +25,15 @@
       ]
     },
     {
+      "id": "concept-mcp",
+      "type": "Concept",
+      "notes": [
+        "Model Context Protocol: an open standard that plugs tools into any MCP client",
+        "the traversal loop moves out of the n8n agent into whichever client connects",
+        "same index and same retrieval pattern, different consumer"
+      ]
+    },
+    {
       "id": "concept-multi-hop-traversal",
       "type": "Concept",
       "notes": [
@@ -75,6 +84,16 @@
       ]
     },
     {
+      "id": "component-mcp-server",
+      "type": "Component",
+      "notes": [
+        "MCP Server Trigger workflow in n8n, no model inside, the connecting client brings its own",
+        "read tools: read_index, get_node, search_nodes",
+        "write tools: create_node, update_node, delete_node, one commit to graph/nodes/ each",
+        "every write triggers the sync action, so the index reindexes automatically"
+      ]
+    },
+    {
       "id": "component-n8n-agent",
       "type": "Component",
       "notes": [
@@ -88,7 +107,8 @@
       "type": "Component",
       "notes": [
         "scripts/sync-graph.mjs",
-        "reads all node frontmatters, generates index.md, graph-data.json, and the index inside both n8n workflows",
+        "reads all node frontmatters, generates index.md, graph-data.json, and the index inside both chat workflows",
+        "the MCP server workflow carries no index copy, it reads the index live and needs no sync",
         "runs locally via bun, or automatically via GitHub Action"
       ]
     },
@@ -161,6 +181,15 @@
       ]
     },
     {
+      "id": "step-6-build-mcp",
+      "type": "Step",
+      "notes": [
+        "wire up MCP Server Trigger + six tool nodes in n8n",
+        "reads via plain HTTP like variant A, writes via the native GitHub node like variant B, it hides the base64/sha bookkeeping of the Contents API",
+        "connect any MCP client to the server URL"
+      ]
+    },
+    {
       "id": "limitations-of-the-pattern",
       "type": "Limitation",
       "notes": [
@@ -207,6 +236,11 @@
     },
     {
       "source": "this-project",
+      "target": "component-mcp-server",
+      "rel": "consists_of"
+    },
+    {
+      "source": "this-project",
       "target": "step-1-model-the-graph",
       "rel": "built_in"
     },
@@ -229,6 +263,16 @@
       "source": "concept-index-as-retriever",
       "target": "concept-rag-without-embeddings",
       "rel": "distinguished_from"
+    },
+    {
+      "source": "concept-mcp",
+      "target": "concept-index-as-retriever",
+      "rel": "applies"
+    },
+    {
+      "source": "concept-mcp",
+      "target": "component-mcp-server",
+      "rel": "implemented_in"
     },
     {
       "source": "concept-multi-hop-traversal",
@@ -266,6 +310,11 @@
       "rel": "produces"
     },
     {
+      "source": "component-agents-md",
+      "target": "component-mcp-server",
+      "rel": "produces"
+    },
+    {
       "source": "component-graph-index",
       "target": "component-n8n-agent",
       "rel": "loaded_by"
@@ -274,6 +323,26 @@
       "source": "component-graph-nodes",
       "target": "component-graph-index",
       "rel": "aggregated_in"
+    },
+    {
+      "source": "component-mcp-server",
+      "target": "component-graph-index",
+      "rel": "reads"
+    },
+    {
+      "source": "component-mcp-server",
+      "target": "component-graph-nodes",
+      "rel": "fetches"
+    },
+    {
+      "source": "component-mcp-server",
+      "target": "component-graph-nodes",
+      "rel": "writes"
+    },
+    {
+      "source": "component-mcp-server",
+      "target": "component-sync-script",
+      "rel": "triggers"
     },
     {
       "source": "component-n8n-agent",
@@ -383,6 +452,16 @@
     {
       "source": "step-5-build-website",
       "target": "component-website",
+      "rel": "produces"
+    },
+    {
+      "source": "step-5-build-website",
+      "target": "step-6-build-mcp",
+      "rel": "next_step"
+    },
+    {
+      "source": "step-6-build-mcp",
+      "target": "component-mcp-server",
       "rel": "produces"
     },
     {

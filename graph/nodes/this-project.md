@@ -10,6 +10,7 @@ edges:
   - {rel: consists_of, target: component-sync-script}
   - {rel: consists_of, target: component-n8n-agent}
   - {rel: consists_of, target: component-website}
+  - {rel: consists_of, target: component-mcp-server}
   - {rel: built_in, target: step-1-model-the-graph}
   - {rel: has_limitation, target: limitations-of-the-pattern}
 ---

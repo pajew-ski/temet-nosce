@@ -8,6 +8,7 @@ edges:
   - {rel: produces, target: component-sync-script}
   - {rel: produces, target: component-n8n-agent}
   - {rel: produces, target: component-website}
+  - {rel: produces, target: component-mcp-server}
 ---
 
 - build spec for a coding agent

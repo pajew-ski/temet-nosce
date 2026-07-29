@@ -1,0 +1,285 @@
+{
+  "name": "temet nosce MCP server (graph tools)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "temet-nosce-graph"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        256,
+        112
+      ],
+      "id": "add338eb-df54-405d-a5e1-1a8cd279bbac",
+      "name": "MCP Server",
+      "webhookId": "e4cb2519-a5f3-4cac-84c5-7c341983b709"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Returns the full index of the temet nosce knowledge graph: one block per node with its id, type, one line of notes, its directed edges, and the path of its file in the pajew-ski/temet-nosce repository. Call this first; it is the map every other tool works from. There is no query parameter, relevance is decided by reading it.",
+        "method": "GET",
+        "url": "https://api.github.com/repos/pajew-ski/temet-nosce/contents/graph/index.md",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.raw"
+            },
+            {
+              "name": "User-Agent",
+              "value": "temet-nosce-mcp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        336
+      ],
+      "id": "0833f05e-3734-4770-a94d-e77c30ad27b7",
+      "name": "read_index"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches one node file from the pajew-ski/temet-nosce repository. Pass the path exactly as it appears in the path field of an index block, for example graph/nodes/this-project.md. Returns the raw markdown: YAML frontmatter (id, type, notes, edges) plus body. This is the multi-hop tool: read a node, look at its edges, decide which target matters for the question, fetch that one next, one call per hop.",
+        "method": "GET",
+        "url": "=https://api.github.com/repos/pajew-ski/temet-nosce/contents/{{ $fromAI('path', 'The path field of an index block, for example graph/nodes/this-project.md', 'string') }}",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.raw"
+            },
+            {
+              "name": "User-Agent",
+              "value": "temet-nosce-mcp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        128,
+        336
+      ],
+      "id": "2de381c4-6441-453a-83e7-f8882e9d4f38",
+      "name": "get_node"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Full-text search across the node file bodies of pajew-ski/temet-nosce, for when the index is not enough: the index carries only each node id, its notes and edges, not the body text. Pass plain search terms; the repo and path qualifiers are appended automatically. Returns matching file paths with text-match fragments; follow up with get_node. GitHub code search indexes the default branch with a lag of up to a few minutes after a commit.",
+        "method": "GET",
+        "url": "https://api.github.com/search/code",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendQuery": true,
+        "specifyQuery": "keypair",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $fromAI('query', 'Plain search terms to find in node file bodies', 'string') }} repo:pajew-ski/temet-nosce path:graph/nodes"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.text-match+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "temet-nosce-mcp"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        256,
+        336
+      ],
+      "id": "eea01dc3-4310-4270-a955-f17b40f77770",
+      "name": "search_nodes"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Creates a new node file graph/nodes/<id>.md in pajew-ski/temet-nosce and commits it to main. Pass the node id (lowercase, hyphen separated, it becomes the filename) and the complete markdown content: frontmatter opened and closed with ---, containing id (must equal the filename), type (Project, Concept, Component, Step or Limitation), notes (a JSON array of double-quoted strings), edges (either [] or one line per edge of the form - {rel: relation_name, target: node-id}), then an optional body. Every edge target must be an existing node id from read_index. The commit triggers the repository sync action, which validates the graph and regenerates the index, so the node shows up in read_index about a minute later.",
+        "resource": "file",
+        "operation": "create",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pajew-ski"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "temet-nosce"
+        },
+        "filePath": "=graph/nodes/{{ $fromAI('id', 'The node id, lowercase and hyphen separated; it becomes the filename', 'string') }}.md",
+        "fileContent": "={{ $fromAI('content', 'The complete markdown file: YAML frontmatter with id, type, notes, edges, then an optional body', 'string') }}",
+        "commitMessage": "=mcp: create graph/nodes/{{ $fromAI('id') }}.md",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        336
+      ],
+      "id": "c69e9084-38d4-49d1-9bf9-87fcf46fd6d1",
+      "name": "create_node",
+      "webhookId": "9d34ebef-3fa3-4517-8204-991a623f0c61"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Replaces the content of an existing node file graph/nodes/<id>.md in pajew-ski/temet-nosce and commits it to main. Read the current file with get_node first, then pass the node id and the complete new markdown content (same format rules as create_node); the file is overwritten as a whole, not patched. Every edge target must be an existing node id. The commit triggers the repository sync action, which validates the graph and regenerates the index automatically.",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pajew-ski"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "temet-nosce"
+        },
+        "filePath": "=graph/nodes/{{ $fromAI('id', 'The node id of an existing node, without path or .md extension', 'string') }}.md",
+        "fileContent": "={{ $fromAI('content', 'The complete new markdown file: YAML frontmatter with id, type, notes, edges, then an optional body', 'string') }}",
+        "commitMessage": "=mcp: update graph/nodes/{{ $fromAI('id') }}.md",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        336
+      ],
+      "id": "e8c11bc7-277a-46d6-b83d-e05d4cae8e41",
+      "name": "update_node",
+      "webhookId": "1e1cc36a-3b07-488a-b1d1-024b93154d17"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Deletes the node file graph/nodes/<id>.md from pajew-ski/temet-nosce with a commit to main. Before deleting, check read_index for edges pointing at this node and remove them via update_node on the referencing nodes; otherwise the sync action fails its edge validation and the index stays stale. The commit triggers the sync action, which regenerates the index without the node.",
+        "resource": "file",
+        "operation": "delete",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "pajew-ski"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "temet-nosce"
+        },
+        "filePath": "=graph/nodes/{{ $fromAI('id', 'The node id of the node to delete, without path or .md extension', 'string') }}.md",
+        "commitMessage": "=mcp: delete graph/nodes/{{ $fromAI('id') }}.md",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        336
+      ],
+      "id": "0f5a012c-938b-49ec-9655-54b263238124",
+      "name": "delete_node",
+      "webhookId": "d233a7c8-64e9-4df3-a45d-67bdb0f161b8"
+    }
+  ],
+  "connections": {
+    "read_index": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_node": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_nodes": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_node": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_node": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_node": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

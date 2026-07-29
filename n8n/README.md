@@ -1,6 +1,8 @@
 # n8n workflows
 
-Two complete, independently runnable variants of the same agent. Both read the graph index from their system prompt and fetch node files from this repository on demand; they differ only in the retrieval tool. That difference is the point: the pattern is not tied to a specific tool.
+Three complete, independently runnable workflows: two variants of the same chat agent, and an MCP server that hands the graph to external clients ([jump to it](#mcp-server)).
+
+The two chat variants both read the graph index from their system prompt and fetch node files from this repository on demand; they differ only in the retrieval tool. That difference is the point: the pattern is not tied to a specific tool.
 
 Both variants share:
 
@@ -31,7 +33,33 @@ One honest caveat, verified against the n8n source: the native node in this mode
 4. Save and activate the workflow.
 5. Open the Chat Trigger node, copy the production chat URL, and paste it into `WEBHOOK_URL` at the top of `docs/chat.js`. The trigger allows all origins by default; you can restrict Allowed Origins to your GitHub Pages domain in its options.
 
-If you change the graph, run `bun scripts/sync-graph.mjs`. It rewrites the index inside both workflow JSONs as well, replacing only what follows the `THE INDEX` marker, so the files never drift from the nodes. Re-import the workflow into n8n (or paste the fresh block into the running Agent's system message) to pick up the change.
+If you change the graph, run `bun scripts/sync-graph.mjs`. It rewrites the index inside both chat workflow JSONs as well, replacing only what follows the `THE INDEX` marker, so the files never drift from the nodes. Re-import the workflow into n8n (or paste the fresh block into the running Agent's system message) to pick up the change. The MCP server workflow is exempt from all of this: it embeds no index copy and reads `graph/index.md` live.
+
+## MCP server
+
+`workflow-mcp-server.json` exposes the graph over the [Model Context Protocol](https://modelcontextprotocol.io), so any MCP client, Claude Code, Claude Desktop, an IDE, another agent, can use it directly. It is the chat agent turned inside out: there is no model node and no index copy in the workflow. The client's model reads the index, decides what is relevant, and drives the multi-hop loop itself; n8n only serves the tools.
+
+Six tools hang off an MCP Server Trigger:
+
+- **`read_index`**: returns `graph/index.md` raw, the map everything else works from. Plain HTTP like variant A, unauthenticated.
+- **`get_node`**: returns one node file raw, parameter `path` from an index block. One call per hop; this is the multi-hop retrieval tool.
+- **`search_nodes`**: full-text search over the node bodies via GitHub's code search API, for what the index doesn't carry (the index has notes, not bodies). Returns matching paths with text fragments. GitHub requires auth for code search, and its index lags commits by a few minutes.
+- **`create_node` / `update_node` / `delete_node`**: the write path, native GitHub nodes like variant B, because the native node hides the base64 and sha bookkeeping that Contents API writes need. The file path is locked to `graph/nodes/<id>.md` with only the id model-filled, so the tools cannot touch anything outside the graph. Each write is one commit to `main`.
+
+Reindexing after a write is automatic and needs nothing from the client: the commit lands in `graph/nodes/`, that push event runs `sync-graph.yml`, and the action regenerates `graph/index.md`, `docs/graph-data.json`, and the chat workflow prompts. A new node shows up in `read_index` about a minute after `create_node` returns. If a write breaks the graph (an edge to a node that doesn't exist), the action fails validation instead of publishing a broken index; the delete tool's description tells the model to remove inbound edges first for exactly this reason.
+
+### Setup
+
+1. Import `workflow-mcp-server.json` like the others.
+2. Create one GitHub credential and select it in the four nodes that need it: `search_nodes`, `create_node`, `update_node`, `delete_node`. A fine-grained PAT with read/write on **Contents**, scoped to this repository only, is enough and is also the sensible ceiling: it is the blast radius of the write tools.
+3. Save and activate. Open the MCP Server Trigger and copy the production URL.
+4. Connect a client. For Claude Code: `claude mcp add --transport http temet-nosce <production URL>`.
+
+The trigger ships with no inbound authentication, which matches the rest of this public showcase but means anyone with the URL can call the write tools with your PAT behind them. For anything beyond a demo, set the trigger's Authentication to Bearer and give the token to your clients, or drop the three write tools and run it read-only.
+
+### Forking the MCP server
+
+Same idea as [below](#forking-this): the workflow cannot know your repo. After importing, point at your fork: the URLs in `read_index` and `get_node`, the `repo:` qualifier in the `search_nodes` query, the Owner/Repository fields in the three write tools, and the repo name wherever a tool description mentions it.
 
 ## Forking this
 
@@ -57,3 +85,5 @@ Everything else, the `WEBHOOK_URL` in `docs/chat.js` and the credentials, is par
 ## When to use which
 
 Variant A whenever the answer quality matters, and whenever you want to transfer the pattern: swap the URL and the tool description, and the same one-parameter tool reads any REST API. Variant B when you want to see how a native n8n node becomes an agent tool with the least configuration, and the base64 detour is acceptable.
+
+The MCP server is not an alternative to the variants but a different audience: the variants serve the website widget its answers, the MCP server serves your own tools the graph itself, including the pen to edit it.

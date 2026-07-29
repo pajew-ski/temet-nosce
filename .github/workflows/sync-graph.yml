@@ -17,12 +17,12 @@ jobs:
       - run: bun scripts/sync-graph.mjs
       - name: commit generated files if changed
         run: |
-          if git diff --quiet -- graph/index.md docs/graph-data.json; then
-            echo "index and graph data already in sync"
+          if git diff --quiet -- graph/index.md docs/graph-data.json n8n/*.json; then
+            echo "index, graph data, and workflows already in sync"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add graph/index.md docs/graph-data.json
+          git add graph/index.md docs/graph-data.json n8n/*.json
           git commit -m "chore: sync graph index and data"
           git push
