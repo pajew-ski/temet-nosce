@@ -3,7 +3,7 @@
 ## this-project
 type: Project
 notes: public learning project, graph thinking + agent retrieval without embeddings
-edges: consists_of -> concept-graph-thinking, consists_of -> component-agents-md, consists_of -> component-graph-nodes, consists_of -> component-graph-index, consists_of -> component-sync-script, consists_of -> component-n8n-agent, consists_of -> component-website, built_in -> step-1-model-the-graph, has_limitation -> limitations-of-the-pattern
+edges: consists_of -> concept-graph-thinking, consists_of -> component-agents-md, consists_of -> component-graph-nodes, consists_of -> component-graph-index, consists_of -> component-sync-script, consists_of -> component-n8n-agent, consists_of -> component-website, consists_of -> component-mcp-server, built_in -> step-1-model-the-graph, has_limitation -> limitations-of-the-pattern
 path: graph/nodes/this-project.md
 
 ## concept-graph-thinking
@@ -17,6 +17,12 @@ type: Concept
 notes: index is read as text, the LLM decides which node is relevant by language understanding, no vector similarity, no embedding
 edges: enables -> concept-multi-hop-traversal, distinguished_from -> concept-rag-without-embeddings
 path: graph/nodes/concept-index-as-retriever.md
+
+## concept-mcp
+type: Concept
+notes: Model Context Protocol: an open standard that plugs tools into any MCP client, the traversal loop moves out of the n8n agent into whichever client connects, same index and same retrieval pattern, different consumer
+edges: applies -> concept-index-as-retriever, implemented_in -> component-mcp-server
+path: graph/nodes/concept-mcp.md
 
 ## concept-multi-hop-traversal
 type: Concept
@@ -39,7 +45,7 @@ path: graph/nodes/concept-topology-vs-payload.md
 ## component-agents-md
 type: Component
 notes: build spec for a coding agent, first step, everything else is generated from it
-edges: produces -> component-graph-nodes, produces -> component-graph-index, produces -> component-sync-script, produces -> component-n8n-agent, produces -> component-website
+edges: produces -> component-graph-nodes, produces -> component-graph-index, produces -> component-sync-script, produces -> component-n8n-agent, produces -> component-website, produces -> component-mcp-server
 path: graph/nodes/component-agents-md.md
 
 ## component-graph-index
@@ -54,6 +60,12 @@ notes: MD files with YAML frontmatter, id, type, edges, payload layer of the gra
 edges: aggregated_in -> component-graph-index
 path: graph/nodes/component-graph-nodes.md
 
+## component-mcp-server
+type: Component
+notes: MCP Server Trigger workflow in n8n, no model inside, the connecting client brings its own, read tools: read_index, get_node, search_nodes, write tools: create_node, update_node, delete_node, one commit to graph/nodes/ each, every write triggers the sync action, so the index reindexes automatically
+edges: reads -> component-graph-index, fetches -> component-graph-nodes, writes -> component-graph-nodes, triggers -> component-sync-script
+path: graph/nodes/component-mcp-server.md
+
 ## component-n8n-agent
 type: Component
 notes: AI Agent node in n8n, system prompt = content of graph/index.md, also answers questions about itself
@@ -62,7 +74,7 @@ path: graph/nodes/component-n8n-agent.md
 
 ## component-sync-script
 type: Component
-notes: scripts/sync-graph.mjs, reads all node frontmatters, generates index.md, graph-data.json, and the index inside both n8n workflows, runs locally via bun, or automatically via GitHub Action
+notes: scripts/sync-graph.mjs, reads all node frontmatters, generates index.md, graph-data.json, and the index inside both chat workflows, the MCP server workflow carries no index copy, it reads the index live and needs no sync, runs locally via bun, or automatically via GitHub Action
 edges: produces -> component-graph-index, mitigates -> limitations-of-the-pattern
 path: graph/nodes/component-sync-script.md
 
@@ -111,8 +123,14 @@ path: graph/nodes/step-4-build-n8n.md
 ## step-5-build-website
 type: Step
 notes: graph-data.json is already produced by the sync script, wire up visualization, chat widget, and dark/light handling
-edges: produces -> component-website
+edges: produces -> component-website, next_step -> step-6-build-mcp
 path: graph/nodes/step-5-build-website.md
+
+## step-6-build-mcp
+type: Step
+notes: wire up MCP Server Trigger + six tool nodes in n8n, reads via plain HTTP like variant A, writes via the native GitHub node like variant B, it hides the base64/sha bookkeeping of the Contents API, connect any MCP client to the server URL
+edges: produces -> component-mcp-server
+path: graph/nodes/step-6-build-mcp.md
 
 ## limitations-of-the-pattern
 type: Limitation
