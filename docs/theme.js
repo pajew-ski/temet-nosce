@@ -1,6 +1,7 @@
-// Shared dark/light detection. Plain CSS switches through prefers-color-scheme
-// on its own; this module exists for the two consumers that render outside the
-// cascade and need to react in JS.
+// Dark/light detection. Plain CSS switches through prefers-color-scheme on its
+// own, and the chat widget follows it through the --chat--* properties, so this
+// module exists for the one consumer that renders outside the cascade:
+// cytoscape, which paints on a canvas and has to be re-styled in JS.
 export function getTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }

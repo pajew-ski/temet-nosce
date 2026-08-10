@@ -37,7 +37,7 @@ Target audience: complete beginners to graphs. The goal isn't production readine
 │   └── README.md                    (setup, differences between the workflows)
 └── .github/
     └── workflows/
-        └── sync-graph.yml           (runs sync-graph.mjs on every push)
+        └── sync-graph.yml           (runs sync-graph.mjs on pushes touching graph/nodes/**)
 ```
 
 ## Data Model
@@ -296,7 +296,7 @@ Good demo path for "how are you built and how would I build one myself": `this-p
 - Bun, no external dependencies. The frontmatter schema is constrained enough for a small hand-written parser, no need for `js-yaml` or similar
 - Reads all `graph/nodes/*.md`, extracts `id`, `type`, `notes`, `edges`
 - Writes `graph/index.md` per the index schema
-- Writes `docs/graph-data.json` as `{nodes: [{id, type}], edges: [{source, target, rel}]}`
+- Writes `docs/graph-data.json` as `{nodes: [{id, type, notes}], edges: [{source, target, rel}]}`
 - Rewrites the index inside the system prompts of both chat workflow JSONs (`workflow-variant-a/b`), replacing only what follows the `THE INDEX` marker, so the workflows never drift from the nodes either. `workflow-mcp-server.json` embeds no index copy; its `read_index` tool fetches `graph/index.md` live and needs no sync
 - Validates along the way: every edge must point to an existing `id`, otherwise it errors with file name and line, non-zero exit code
 - Invocation: `bun scripts/sync-graph.mjs`, no flags needed
@@ -370,23 +370,26 @@ body { line-height: 1.618; }
 **Layout**: graph canvas and detail side panel split at the golden ratio, not 50/50
 
 ```css
-.layout { grid-template-columns: 1.618fr 1fr; }
+.layout { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); }
 ```
 
-The graph canvas itself is a golden rectangle: `aspect-ratio: 1.618 / 1`.
+`minmax(0, …)` rather than a bare `fr`: Cytoscape gives its inner wrapper an explicit pixel size on every resize, and a bare `fr` track treats that as a content minimum, so after an orientation flip the stale wrapper size would lock the canvas at its old width.
 
-Tailwind is used for layout and spacing utilities only (flex, grid, gap). No Tailwind color classes, the default palette would reintroduce a hue. All color comes from the custom properties above.
+The graph canvas keeps the golden ratio as well, but derived from the viewport (`clamp(340px, 62vh, 700px)` in landscape, a `100vw`-derived height in portrait) rather than declared with `aspect-ratio: 1.618 / 1`: WebKit mis-sizes an empty grid item that carries an `aspect-ratio` and collapses the canvas to nothing on phones and tablets in portrait.
+
+No CSS framework. `docs/style.css` is hand-written and semantic (`.shell`, `.hero`, `.layout`, `.panel`), with layout coming straight from grid and flex. The token names above borrow Tailwind's vocabulary — `--space-1`…`--space-8`, `--text-sm`…`--text-2xl`, `--radius-sm`…`--radius-lg` — because that scale naming reads fluently to anyone who has seen it, but the values are φ and Fibonacci and nothing is generated: no utility classes, no build step, no Tailwind palette that would reintroduce a hue. All color comes from the custom properties above.
 
 ## Website (`docs/`)
 
-Stack, both via CDN, no npm, no bundler:
+Stack, everything via CDN, no npm, no bundler:
 
-- **Tailwind CSS** (CDN script), layout and spacing utilities only, no color classes (see Design System)
-- **Cytoscape.js** (CDN script) for the graph visualization, `cose` layout as default, node/edge colors pulled from the design tokens instead of Cytoscape's defaults
+- **Cytoscape.js** (CDN script) for the graph visualization, node/edge colors pulled from the design tokens instead of Cytoscape's defaults. Layout is `preset`, with the positions computed in `graph.js`: the project at the center, the build steps on an inner ring in sequence order, components and concepts on outer rings, each pulled toward the neighbours it connects to. A force layout like `cose` scatters a graph this small differently on every load; a deterministic radial one shows the structure the graph actually has
+- **`@n8n/chat`** (CDN module) for the chat widget, themed through its own custom properties
+- Everything else is hand-written: one stylesheet and three small ES modules, no framework, no utility-class library (see Design System)
 
 `index.html`, single page, three sections:
 
-1. Short explanation (max. 150 words): what a knowledge graph is, index as retriever instead of similarity function, distinction from vector RAG
+1. Short explanation (max. 150 words): what a knowledge graph is, index as retriever instead of similarity function, distinction from vector RAG. Where the copy names the number of node files, that number is written into a `#node-count` span and overwritten from `graph-data.json` at load, spelled out in words: a hand-counted number in prose is a fact that silently goes stale the first time a node is added
 2. Graph visualization: fetch `graph-data.json`, render with Cytoscape as a golden rectangle, clicking a node shows its notes and edges in a side panel sized at the φ:1 split
 3. n8n chat widget: `@n8n/chat`, fully wired at build time, not a placeholder
 
@@ -419,8 +422,8 @@ Stack, both via CDN, no npm, no bundler:
 
 Automatic only, no toggle. Same neutral tokens from the Design System, swapped via `prefers-color-scheme`.
 
-- The `:root` custom properties (`--bg`, `--surface`, `--text`, ...) switch through the `@media (prefers-color-scheme: dark)` block, covers all plain HTML/CSS, including Tailwind's layout utilities
-- Cytoscape (canvas) and the chat widget (its own internal styling) don't pick up `:root` changes on their own and need to read the current theme in JS. `docs/theme.js` is one small shared module, no dependency:
+- The `:root` custom properties (`--bg`, `--surface`, `--text`, ...) switch through the `@media (prefers-color-scheme: dark)` block, which covers everything styled in CSS: the page itself, and the chat widget through the `--chat--*` properties that reference these tokens
+- Cytoscape draws on a canvas, so it does not pick up `:root` changes on its own and has to read the current theme in JS. `docs/theme.js` is one small module for that, no dependency:
 
   ```js
   export function getTheme() {
@@ -433,7 +436,7 @@ Automatic only, no toggle. Same neutral tokens from the Design System, swapped v
   }
   ```
 
-  `graph.js` uses it to pick Cytoscape's style values on init and re-style on change. `chat.js` uses it to re-set the `--chat--*` custom properties on change.
+  `graph.js` uses it to pick Cytoscape's style values on init and re-style on change. The chat widget needs no JS for this: its `--chat--*` properties are declared in `style.css` against the site tokens, so it flips with the page and `chat.js` stays out of theming entirely.
 
 `graph.js` and `chat.js` both stay thin: fetch/init, read theme via `theme.js`, one or two event handlers. No state management, no framework.
 
