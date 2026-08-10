@@ -18,7 +18,7 @@
   <main class="shell">
     <section id="pattern">
       <h2>The pattern</h2>
-      <p>A knowledge graph stores knowledge as nodes and edges: things, and named relationships between them. This site is built from one. Twenty-three small files describe this project, the concepts it rests on, the steps that build it, and where the pattern breaks.</p>
+      <p>A knowledge graph stores knowledge as nodes and edges: things, and named relationships between them. This site is built from one. <span id="node-count">Twenty-three</span> small files describe this project, the concepts it rests on, the steps that build it, and where the pattern breaks.</p>
       <p>The agent below retrieves from that graph without a vector database and without embeddings. Its entire retrieval apparatus is a flat text index: every node with its type, one line of notes, and its edges. The index sits in the system prompt. The model reads it, decides which node matters for a question, and fetches that node's file from this repository, one hop at a time, following edges by meaning rather than by similarity score.</p>
       <p>Classic RAG asks what text is similar. This pattern asks what is connected.</p>
     </section>

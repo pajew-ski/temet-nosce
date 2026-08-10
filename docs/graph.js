@@ -95,6 +95,22 @@ const data = await (await fetch("graph-data.json")).json();
 const panel = document.querySelector("#panel");
 const nodesById = new Map(data.nodes.map((n) => [n.id, n]));
 
+// The prose above the graph counts the node files. Take that number from the
+// same data the visualization is drawn from, so adding a node can never leave
+// the sentence behind. It runs before cytoscape is touched, so a failed CDN
+// load costs the graph but not the text; the count written into the HTML is
+// the fallback, correct as of the last commit either way.
+const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+function spell(n) {
+  if (n < 20) return ONES[n];
+  if (n < 100) return n % 10 ? `${TENS[(n / 10) | 0]}-${ONES[n % 10]}` : TENS[(n / 10) | 0];
+  return String(n); // past ninety-nine the digits read better than the words anyway
+}
+const counted = spell(data.nodes.length);
+document.querySelector("#node-count").textContent = counted[0].toUpperCase() + counted.slice(1);
+
 // Radial layout: the project sits at the center, the build steps form an inner
 // ring in sequence order (clockwise from the top), and everything else sits on
 // outer rings by role. Each outer node is pulled toward the mean angle of the
