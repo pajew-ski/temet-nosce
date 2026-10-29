@@ -9,7 +9,7 @@ const WEBHOOK_URL = "https://n8n.pajewski.net/webhook/082d33c3-5847-4dc9-8ab4-7b
 // the chat surface differs.
 //   "window"     — a floating action button in the corner that opens the chat
 //                  in a popover (default). The embedded box is left out.
-//   "fullscreen" — the chat embedded in the section as a golden rectangle,
+//   "fullscreen" — the chat embedded in the section as a 512 px square,
 //                  the page's centerpiece.
 const CHAT_MODE = "window";
 

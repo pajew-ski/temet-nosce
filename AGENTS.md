@@ -25,7 +25,7 @@ Target audience: complete beginners to graphs. The goal isn't production readine
 │   └── sync-graph.mjs               (generates index.md, graph-data.json, workflow prompts)
 ├── docs/                             (GitHub Pages source: Settings → Pages → main /docs)
 │   ├── index.html
-│   ├── style.css                    (design tokens: neutral OKLCH grays, φ/Fibonacci scale)
+│   ├── style.css                    (albedo token block: neutral OKLCH grays, base-2 scale)
 │   ├── theme.js                     (shared dark/light detection, used by graph.js + chat.js)
 │   ├── graph.js                     (Cytoscape.js rendering)
 │   ├── graph-data.json              (generated, do not edit by hand)
@@ -207,7 +207,7 @@ edges:
 ```yaml
 id: component-website
 type: Component
-notes: ["index.html with explanation, graph visualization, chat widget", "GitHub Pages, no build step", "automatic dark/light mode via prefers-color-scheme", "achromatic design system, all spacing/type/layout derived from φ"]
+notes: ["index.html with explanation, graph visualization, chat widget", "GitHub Pages, no build step", "automatic dark/light mode via prefers-color-scheme", "achromatic design system, all spacing/type/layout derived from 2 (albedo)"]
 edges:
   - {rel: visualizes, target: component-graph-nodes}
   - {rel: displays, target: component-n8n-agent}
@@ -310,74 +310,49 @@ Good demo path for "how are you built and how would I build one myself": `this-p
 
 ## Design System
 
-Beauty is a first-class requirement, not a finishing touch. Every spacing, sizing, and typography decision derives from a single constant: φ (1.618).
+Beauty is a first-class requirement, not a finishing touch. The design follows albedo: achromatic color, and every spacing, sizing, and typography decision derived from a single base, 2.
 
-**Color**: strictly achromatic, no hue, light and dark share the same scale
+### Tokens (albedo)
 
-```css
-:root {
-  color-scheme: light dark;
-  --bg: oklch(98% 0 0);
-  --surface: oklch(94% 0 0);
-  --border: oklch(85% 0 0);
-  --text: oklch(15% 0 0);
-  --text-muted: oklch(40% 0 0);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: oklch(15% 0 0);
-    --surface: oklch(20% 0 0);
-    --border: oklch(30% 0 0);
-    --text: oklch(95% 0 0);
-    --text-muted: oklch(70% 0 0);
-  }
-}
-```
+The stylesheet begins with the albedo token block, from `/* albedo: Anfang */` to `/* albedo: Ende */`, markers included. The block is identical, byte for byte, in all four repos of the family (temet-nosce, open-desensitizer, open-entrainer, open-helix); a change to it is a change to all four. Its source lives in a private repository, so the tables below are the reference here.
 
-`oklch(L 0 0)`: chroma is 0, hue is meaningless at chroma 0, so the palette cannot tint. Lightness steps are chosen for contrast, not for φ. Forcing a ratio onto perceptual lightness would fight accessibility rather than serve it. φ belongs in the geometry, not in the gray values.
+Tones, `oklch(L 0 0)`:
 
-**Spacing**: Fibonacci sequence, converges to φ, and is the same sequence nature uses for phyllotaxis and shell growth. One ladder, reused for padding, gaps, margins, and border-radius.
+| Token | Light | Dark |
+|---|---|---|
+| `--bg` | 98% | 15% |
+| `--surface` | 94% | 23% |
+| `--border` | 85% | 32% |
+| `--text` | 15% | 95% |
+| `--text-muted` | 40% | 70% |
 
-```css
-:root {
-  --space-1: 5px;
-  --space-2: 8px;
-  --space-3: 13px;
-  --space-4: 21px;
-  --space-5: 34px;
-  --space-6: 55px;
-  --space-7: 89px;
-  --space-8: 144px;
-  --radius-sm: var(--space-1);
-  --radius-md: var(--space-2);
-  --radius-lg: var(--space-3);
-}
-```
+Geometry:
 
-**Typography**: base size stays at the browser default (`1rem`, respects user zoom and accessibility settings), scale ratio is φ
+| Token | Value | Rule |
+|---|---|---|
+| `--step-2` … `--step-7` | 4, 8, 16, 32, 64, 128 px | 2ⁿ px |
+| `--radius-sm`, `--radius-md`, `--radius-lg` | `--step-2`, `--step-3`, `--step-4` (4, 8, 16 px) | |
+| `--type-sm` | 0.875rem | 14px, 1 − 2⁻³, the legibility floor |
+| `--type-0` … `--type-4` | 1, 1.414, 2, 2.828, 4 rem | 2^(k/2) rem |
+| `--leading` | 1.414 | √2 |
+| shell (outside the block) | 1024px max width | 2¹⁰ |
+| text column (outside the block) | 32rem max width | 2⁵ rem |
+
+- Color is achromatic. Chroma 0 cannot tint; light and dark share one scale and flip with `prefers-color-scheme`. `color-scheme: light dark` on the root so form controls follow. There is no switch, neither for the scheme nor for the language.
+- Hue exists only as a data channel: `oklch(var(--hue-l) var(--hue-c) H)`, with `--hue-l` 45% light and 75% dark, `--hue-c` 0.11, and the angle H free. Hue never carries meaning alone; a second mark (shape, position, label) always goes with it.
+- Geometry derives from 2, the same growth as the Krystal Flower. A size the tokens do not cover takes the nearest power of two, a font size the nearest √2 step, never below 0.875rem. Exceptions: the 1px hairline, the 44px tap target, radii of half the element height (circles and pills stay round), and values that belong to a foreign system.
+
+**Layout**: graph canvas and detail side panel split at √2:1, the half step of the base-2 scale, not 50/50
 
 ```css
-:root {
-  --text-sm: 0.875rem;     /* 14px, captions — deliberately not 1/φ, legibility floor */
-  --text-base: 1rem;       /* 16px */
-  --text-lg: 1.618rem;     /* φ¹, ~26px, h3 */
-  --text-xl: 2.618rem;     /* φ², ~42px, h2 */
-  --text-2xl: 4.236rem;    /* φ³, ~68px, h1 / hero */
-}
-body { line-height: 1.618; }
-```
-
-**Layout**: graph canvas and detail side panel split at the golden ratio, not 50/50
-
-```css
-.layout { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); }
+.layout { grid-template-columns: minmax(0, 1.414fr) minmax(0, 1fr); }
 ```
 
 `minmax(0, …)` rather than a bare `fr`: Cytoscape gives its inner wrapper an explicit pixel size on every resize, and a bare `fr` track treats that as a content minimum, so after an orientation flip the stale wrapper size would lock the canvas at its old width.
 
-The graph canvas keeps the golden ratio as well, but derived from the viewport (`clamp(340px, 62vh, 700px)` in landscape, a `100vw`-derived height in portrait) rather than declared with `aspect-ratio: 1.618 / 1`: WebKit mis-sizes an empty grid item that carries an `aspect-ratio` and collapses the canvas to nothing on phones and tablets in portrait.
+The graph canvas keeps the √2 ratio as well, but derived from the viewport (`clamp(340px, 71vh, 700px)` in landscape, a `100vw`-derived height in portrait) rather than declared with `aspect-ratio: 1.414 / 1`: WebKit mis-sizes an empty grid item that carries an `aspect-ratio` and collapses the canvas to nothing on phones and tablets in portrait.
 
-No CSS framework. `docs/style.css` is hand-written and semantic (`.shell`, `.hero`, `.layout`, `.panel`), with layout coming straight from grid and flex. The token names above borrow Tailwind's vocabulary — `--space-1`…`--space-8`, `--text-sm`…`--text-2xl`, `--radius-sm`…`--radius-lg` — because that scale naming reads fluently to anyone who has seen it, but the values are φ and Fibonacci and nothing is generated: no utility classes, no build step, no Tailwind palette that would reintroduce a hue. All color comes from the custom properties above.
+No CSS framework. `docs/style.css` is hand-written and semantic (`.shell`, `.hero`, `.layout`, `.panel`), with layout coming straight from grid and flex. Nothing is generated: no utility classes, no build step, no palette that would reintroduce a hue. All color comes from the custom properties above.
 
 ## Website (`docs/`)
 
@@ -390,7 +365,7 @@ Stack, everything via CDN, no npm, no bundler:
 `index.html`, single page, three sections:
 
 1. Short explanation (max. 150 words): what a knowledge graph is, index as retriever instead of similarity function, distinction from vector RAG. Where the copy names the number of node files, that number is written into a `#node-count` span and overwritten from `graph-data.json` at load, spelled out in words: a hand-counted number in prose is a fact that silently goes stale the first time a node is added
-2. Graph visualization: fetch `graph-data.json`, render with Cytoscape as a golden rectangle, clicking a node shows its notes and edges in a side panel sized at the φ:1 split
+2. Graph visualization: fetch `graph-data.json`, render with Cytoscape in a √2 rectangle, clicking a node shows its notes and edges in a side panel sized at the √2:1 split
 3. n8n chat widget: `@n8n/chat`, fully wired at build time, not a placeholder
 
    ```html
@@ -410,7 +385,7 @@ Stack, everything via CDN, no npm, no bundler:
      --chat--color-white: var(--bg);
      --chat--color-light: var(--surface);
      --chat--color-dark: var(--text);
-     --chat--spacing: var(--space-4);
+     --chat--spacing: var(--step-4);
      --chat--border-radius: var(--radius-sm);
      --chat--font-family: inherit;
    }

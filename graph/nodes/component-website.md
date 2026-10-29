@@ -1,7 +1,7 @@
 ---
 id: component-website
 type: Component
-notes: ["index.html with explanation, graph visualization, chat widget", "GitHub Pages, no build step", "automatic dark/light mode via prefers-color-scheme", "achromatic design system, all spacing/type/layout derived from φ"]
+notes: ["index.html with explanation, graph visualization, chat widget", "GitHub Pages, no build step", "automatic dark/light mode via prefers-color-scheme", "achromatic design system, all spacing/type/layout derived from 2 (albedo)"]
 edges:
   - {rel: visualizes, target: component-graph-nodes}
   - {rel: displays, target: component-n8n-agent}
@@ -10,4 +10,4 @@ edges:
 - index.html with explanation, graph visualization, chat widget
 - GitHub Pages, no build step
 - automatic dark/light mode via prefers-color-scheme
-- achromatic design system, all spacing/type/layout derived from φ
+- achromatic design system, all spacing/type/layout derived from 2 (albedo)

@@ -92,7 +92,7 @@ path: graph/nodes/component-tool-variant-http.md
 
 ## component-website
 type: Component
-notes: index.html with explanation, graph visualization, chat widget, GitHub Pages, no build step, automatic dark/light mode via prefers-color-scheme, achromatic design system, all spacing/type/layout derived from φ
+notes: index.html with explanation, graph visualization, chat widget, GitHub Pages, no build step, automatic dark/light mode via prefers-color-scheme, achromatic design system, all spacing/type/layout derived from 2 (albedo)
 edges: visualizes -> component-graph-nodes, displays -> component-n8n-agent
 path: graph/nodes/component-website.md
 

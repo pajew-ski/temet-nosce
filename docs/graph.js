@@ -31,8 +31,8 @@ function graphStyle() {
       selector: "node",
       style: {
         shape: (n) => SHAPES[n.data("type")],
-        width: 21,
-        height: 21,
+        width: 16,
+        height: 16,
         "background-color": bg,
         "border-width": 1,
         "border-color": muted,
@@ -41,14 +41,14 @@ function graphStyle() {
         "font-size": 8,
         color: muted,
         "text-valign": "bottom",
-        "text-margin-y": 5,
+        "text-margin-y": 4,
         "text-wrap": "wrap",
-        "text-max-width": 55,
+        "text-max-width": 64,
       },
     },
     {
       selector: 'node[type = "Project"]',
-      style: { width: 34, height: 34, "background-color": text, "border-color": text },
+      style: { width: 32, height: 32, "background-color": text, "border-color": text },
     },
     {
       selector: "node:selected",
@@ -57,7 +57,7 @@ function graphStyle() {
         color: text,
         "underlay-color": muted,
         "underlay-opacity": 0.2,
-        "underlay-padding": 5,
+        "underlay-padding": 4,
       },
     },
     {
@@ -209,7 +209,7 @@ const cy = cytoscape({
   layout: {
     name: "preset",
     positions: radialPositions(data.nodes, data.edges),
-    padding: 34,
+    padding: 32,
     fit: true,
   },
   // The floor must sit below the fit zoom of the smallest phones (~0.11 on a
@@ -274,7 +274,7 @@ function select(id) {
   cy.elements().unselect();
   const node = cy.$id(id);
   node.select();
-  cy.animate({ center: { eles: node } }, { duration: 233 });
+  cy.animate({ center: { eles: node } }, { duration: 256 });
 }
 
 cy.on("select", "node", (e) => {
@@ -300,7 +300,7 @@ new ResizeObserver(() => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     cy.resize();
-    cy.fit(undefined, 34);
+    cy.fit(undefined, 32);
   }, 120);
 }).observe(canvas);
 
